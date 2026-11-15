@@ -1,5 +1,4 @@
-// NewLens | LightRay Optics  -  refraction simulator (raylib)
-// Build example:  gcc refraction.c -o newlens -lraylib -lm   (add -lopengl32 -lgdi32 -lwinmm on Windows)
+//welcome to spaghetti heaven
 
 #include "raylib.h"
 #include "raymath.h"
@@ -22,25 +21,25 @@ typedef enum { SHAPE_SLAB, SHAPE_PRISM, SHAPE_LENS, SHAPE_HALFDISK, SHAPE_MIRROR
 typedef struct {
     ShapeType type;
     Vector2 pos;
-    float rot;      // degrees
+    float rot;
     float scale;
-    float n;        // refractive index (at 589 nm)
+    float n;
     bool mirror;
     int count;
     Vector2 local[MAX_VERTS];
     Vector2 world[MAX_VERTS];
-    float orient;   // +1 / -1 polygon winding
+    float orient;
 } Object;
 
 typedef struct { Vector2 pos; float angle; } Emitter;
 
 typedef struct {
     Vector2 o, d;
-    float I;        // relative intensity (used for culling)
-    float wl;       // wavelength in nm
-    float bright;   // constant brightness multiplier of this ray
+    float I;
+    float wl;
+    float bright; 
     int depth;
-    bool info;      // follows the "measured" ray for angle read-outs
+    bool info;
 } LightRay;
 
 typedef struct { Vector2 a, b; float wl; float alpha; } Seg;
@@ -52,7 +51,6 @@ typedef struct {
     bool tir, mirror;
 } Hit;
 
-// ---------------------------------------------------------------- state
 static Object objs[MAX_OBJECTS];
 static int objCount = 0;
 static int sel = -1;
@@ -71,7 +69,7 @@ static int laserColor = 4;
 static const int beamOptions[] = { 1, 3, 5, 9 };
 static int beamIdx = 0;
 
-static float dispersion = 6.0f;   // exaggerated on purpose so rainbows are visible
+static float dispersion = 6.0f;
 static bool showNormals = true;
 static bool useFresnel  = true;
 static bool showGrid    = true;
@@ -105,7 +103,6 @@ static Color WavelengthToColor(float wl)
         (unsigned char)(powf(b * f, 0.8f) * 255), 255 };
 }
 
-// Cauchy-style dispersion: shorter wavelengths bend more
 static float IndexAt(const Object *o, float wl)
 {
     float um = wl / 1000.0f;
@@ -113,7 +110,6 @@ static float IndexAt(const Object *o, float wl)
     return o->n + B * (1.0f / (um * um) - 1.0f / (0.589f * 0.589f));
 }
 
-// ---------------------------------------------------------------- shapes
 static void AddV(Object *o, float x, float y)
 {
     if (o->count < MAX_VERTS) o->local[o->count++] = (Vector2){ x, y };
@@ -140,12 +136,12 @@ static void BuildShape(Object *o, ShapeType t)
     {
         const float R = 180.0f, h = 100.0f, off = sqrtf(R * R - h * h);
         const int N = 16;
-        for (int k = 0; k <= N; k++)                 // right surface, top -> bottom
+        for (int k = 0; k <= N; k++)
         {
             float y = -h + 2.0f * h * k / N;
             AddV(o, sqrtf(R * R - y * y) - off, y);
         }
-        for (int k = N - 1; k >= 1; k--)             // left surface, bottom -> top
+        for (int k = N - 1; k >= 1; k--)
         {
             float y = -h + 2.0f * h * k / N;
             AddV(o, -(sqrtf(R * R - y * y) - off), y);
@@ -295,7 +291,7 @@ static void Trace(void)
         Object *ob = &objs[bo];
         Vector2 a = ob->world[be], b = ob->world[(be + 1) % ob->count];
         Vector2 e = Vector2Subtract(b, a);
-        Vector2 N = Vector2Normalize((Vector2){ e.y * ob->orient, -e.x * ob->orient }); // outward
+        Vector2 N = Vector2Normalize((Vector2){ e.y * ob->orient, -e.x * ob->orient }); 
         bool exiting = Vector2DotProduct(r.d, N) > 0.0f;
         if (exiting) N = Vector2Negate(N);   // N now faces the incoming ray
 
